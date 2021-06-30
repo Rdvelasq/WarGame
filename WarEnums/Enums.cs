@@ -8,8 +8,7 @@ namespace WarEnums
 {
     public enum Rank
     {
-        one = 1,
-        two,
+        two = 2,
         three,
         four,
         five,
@@ -34,6 +33,6 @@ namespace WarEnums
     public enum Color
     {
         red = 1,
-        black,
+        black
     }
 }

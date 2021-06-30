@@ -11,42 +11,18 @@ namespace WarClasses
     {
         public Rank Rank { get; set; }
         public Suit Suit { get; set; }
-        public Color Color { get; set; }
+        public Color Color { get; }
+
         public Card()
         {
 
         }
-        public Card(Rank rank, Suit suit, Color color)
+
+        public Card(Rank rank, Suit suit)
         {
             Rank = rank;
             Suit = suit;
-            Color = color;
-        }
-    }
-
-    public class Deck
-    {
-        public Queue<Card> Cards = new Queue<Card>();
-        public Deck()
-        {       
-
-        }
-        public Deck(Queue<Card> cards)
-        {
-            Cards = cards;
-        }
-    }
-
-    public class Player
-    {
-        public Deck Deck { get; set; }
-        public Player()
-        {
-
-        }
-        public Player(Deck deck)
-        {
-            Deck = deck;
+            Color = ((suit == Suit.clubs || suit == Suit.spades) ? Color.black : Color.red);
         }
     }
 }

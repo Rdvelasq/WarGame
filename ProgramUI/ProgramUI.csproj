@@ -53,6 +53,10 @@
       <Project>{7BC6DB63-A7FB-491D-93F7-FDDDAD5388B9}</Project>
       <Name>WarEnums</Name>
     </ProjectReference>
+    <ProjectReference Include="..\WarRepo\WarRepo.csproj">
+      <Project>{1243088B-282A-4912-9797-4DA5C7BA1715}</Project>
+      <Name>WarRepo</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
