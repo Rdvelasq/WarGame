@@ -22,7 +22,7 @@ namespace WarRepoNameSpace
             for(int suit = 1; suit <= 4; suit++)
             {
                 //Second For Loop to loop through the 13 cards and giving it the suit from the previous loop 
-                for(int rank = 1; rank <= 13; rank++)
+                for(int rank = 2; rank <= 14; rank++)
                 {
                     Rank rankEnum = (Rank)rank;
                     Suit suitEnum = (Suit)suit;

@@ -20,8 +20,6 @@ namespace ProgramUINameSpace
             Player player2 = new Player("Computer");
             List<Card> playedCards = new List<Card>();
 
-            //Console.WriteLine($"{card.Rank} of {card.Suit} ({card.Color})");
-
             while (true)
             {
                 player1.Score = 0;
@@ -32,8 +30,13 @@ namespace ProgramUINameSpace
                 {
                     Card p1Card = player1.Deck.Cards.Peek();
                     Card p2Card = player2.Deck.Cards.Peek();
-                    Console.WriteLine($"{player1.Name} plays a {p1Card.Rank} of {p1Card.Suit} ({p1Card.Color})");
-                    Console.WriteLine($"{player2.Name} plays a {p2Card.Rank} of {p2Card.Suit} ({p2Card.Color})");
+
+                    Console.WriteLine($"{player1.Name}'s card:");
+                    PrintCard(p1Card);
+                    //Console.WriteLine($"{player1.Name} plays a {p1Card.Rank} of {p1Card.Suit} ({p1Card.Color})");
+                    Console.WriteLine($"{player2.Name}'s card:");
+                    PrintCard(p2Card);
+                    //Console.WriteLine($"{player2.Name} plays a {p2Card.Rank} of {p2Card.Suit} ({p2Card.Color})");
 
                     Player winner = _deckRepo.PlayHand(player1, player2, playedCards);
                     if (winner == null)
@@ -44,6 +47,8 @@ namespace ProgramUINameSpace
                     {
                         Console.WriteLine($"{winner.Name} won this hand.");
                     }
+                    Console.ReadKey();
+                    Console.Clear();
                 }
 
                 Console.WriteLine("----------------------");
@@ -60,6 +65,70 @@ namespace ProgramUINameSpace
 
                 _deckRepo.AddCards(_deckRepo.ShuffleDeck(playedCards));
             }
+        }
+
+        public void PrintCard(Card card)
+        {
+            string strCardRank;
+            switch(card.Rank)
+            {
+                case Rank.two:
+                case Rank.three:
+                case Rank.four:
+                case Rank.five:
+                case Rank.six:
+                case Rank.seven:
+                case Rank.eight:
+                case Rank.nine:
+                case Rank.ten:
+                    int rankIndex = (int)card.Rank;
+                    strCardRank = rankIndex.ToString();
+
+                    break;
+                case Rank.jack:
+                case Rank.queen:
+                case Rank.king:
+                case Rank.ace:
+                    strCardRank = card.Rank.ToString().ToUpper().Substring(0, 1);
+                    break;
+                default:
+                    strCardRank = " ";
+                    break;
+            }
+
+            Console.BackgroundColor = ConsoleColor.White;
+            if (card.Color == Color.red)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Black;
+            }
+            Console.Write($"{(strCardRank.Length > 1 ? strCardRank : strCardRank + " ")}   \n");
+            //Console.BackgroundColor = ConsoleColor.Black;
+            //Console.Write("\n");
+            //Console.BackgroundColor = ConsoleColor.White;
+            switch (card.Suit)
+            {
+                case Suit.clubs:
+                    Console.Write("  \u2663  \n");
+                    break;
+                case Suit.spades:
+                    Console.Write("  \u2660  \n");
+                    break;
+                case Suit.hearts:
+                    Console.Write("  \u2665  \n");
+                    break;
+                case Suit.diamonds:
+                    Console.Write("  \u2666  \n");
+                    break;
+                default:
+                    Console.Write("     \n");
+                    break;
+            }
+            Console.Write($"   {(strCardRank.Length > 1 ? strCardRank : " " + strCardRank)}\n\n");
+            Console.ResetColor();
         }
     }
 }
