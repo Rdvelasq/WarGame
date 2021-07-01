@@ -12,63 +12,122 @@ namespace ProgramUINameSpace
     public class ProgramUI
     {
         private readonly WarRepo _deckRepo = new WarRepo();
+        private Player player1 = new Player();
+        private Player player2 = new Player("Computer");
+        private List<Card> playedCards = new List<Card>();
 
         public void Run()
         {
-            _deckRepo.MakeDeck();
-            Player player1 = new Player("You");
-            Player player2 = new Player("Computer");
-            List<Card> playedCards = new List<Card>();
-
-            while (true)
+            bool continueGame = true;
+            StartGame();
+            while (continueGame)
             {
-                player1.Score = 0;
-                player2.Score = 0;
-                _deckRepo.DealCards(player1, player2);
-
+                ResetGame();
                 while (player1.Deck.Cards.Count > 0)
                 {
-                    Card p1Card = player1.Deck.Cards.Peek();
-                    Card p2Card = player2.Deck.Cards.Peek();
-
-                    Console.WriteLine($"{player1.Name}'s card:");
-                    PrintCard(p1Card);
-                    //Console.WriteLine($"{player1.Name} plays a {p1Card.Rank} of {p1Card.Suit} ({p1Card.Color})");
-                    Console.WriteLine($"{player2.Name}'s card:");
-                    PrintCard(p2Card);
-                    //Console.WriteLine($"{player2.Name} plays a {p2Card.Rank} of {p2Card.Suit} ({p2Card.Color})");
-
+                    DisplayGameInfo();
+                    DisplayHand(player1);
+                    DisplayHand(player2);
                     Player winner = _deckRepo.PlayHand(player1, player2, playedCards);
-                    if (winner == null)
-                    {
-                        Console.WriteLine("Tie");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"{winner.Name} won this hand.");
-                    }
-                    Console.ReadKey();
-                    Console.Clear();
+                    DisplayRoundResult(winner);
                 }
-
-                Console.WriteLine("----------------------");
-                Console.WriteLine($"The final score is {player1.Name} {player1.Score}, {player2.Name} {player2.Score}.");
-                Console.WriteLine(player1.Score > player2.Score ? "You win!" : "You lose!");
-                Console.WriteLine("Press Escape to exit or any other key to continue.");
-
-                ConsoleKey input = Console.ReadKey().Key;
-                if (input == ConsoleKey.Escape)
-                {
-                    break;
-                }
-                Console.Clear();
-
-                _deckRepo.AddCards(_deckRepo.ShuffleDeck(playedCards));
+                DisplayMatchWinner();
+                continueGame = DisplayContinue();
             }
         }
 
-        public void PrintCard(Card card)
+        private void StartGame()
         {
+            string playerName = "";
+            _deckRepo.MakeDeck();
+            while (playerName == "")
+            {
+                Console.WriteLine("Welcome to WAR!\n\n" +
+                                  "What is your name?");
+                playerName = Console.ReadLine();
+                Console.Clear();
+            }
+            player1.Name = playerName;
+        }
+
+        private void ResetGame()
+        {
+            if (playedCards.Count > 0)
+            {
+                _deckRepo.AddCards(_deckRepo.ShuffleDeck(playedCards));
+            }
+            playedCards = new List<Card>();
+            player1.Score = 0;
+            player2.Score = 0;
+            _deckRepo.DealCards(player1, player2);
+        }
+
+        private void DisplayGameInfo()
+        {
+            Console.WriteLine($"Current Score - {player1.Name}: {player1.Score}    {player2.Name}: {player2.Score}                         Rounds remaining: {player1.Deck.Cards.Count - 1}\n" +
+                               "---------------------------------------------------------------------------------------\n");
+        }
+
+        private void DisplayHand(Player player)
+        {
+            Card card = player.Deck.Cards.Peek();
+            Console.WriteLine($"{player.Name}'s card:");
+            PrintCard(card);
+        }
+
+        private void DisplayRoundResult(Player winner)
+        {
+            if (winner == null)
+            {
+                Console.WriteLine("Tie");
+            }
+            else
+            {
+                Console.WriteLine($"{winner.Name} won this hand.");
+            }
+            Console.WriteLine("\nPress any key to play the next hand.");
+            Console.ReadKey();
+            Console.Clear();
+        }
+
+        private void DisplayMatchWinner()
+        {
+            Player winner = _deckRepo.GetWinner(player1, player2);
+            Console.WriteLine($"----------------------------------------------------------------------------------------\n" +
+                              $"The final score is {player1.Name} {player1.Score}, {player2.Name} {player2.Score}.\n");
+            if (winner == null)
+            {
+                Console.WriteLine("The game resulted in a tie.");
+            }
+            else if (winner == player1)
+            {
+                Console.WriteLine("You win!");
+            }
+            else
+            {
+                Console.WriteLine("You lose!");
+            }
+            Console.WriteLine($"----------------------------------------------------------------------------------------");
+        }
+
+        private bool DisplayContinue()
+        {
+            Console.WriteLine("Press Escape to exit or any other key to continue.");
+            ConsoleKey input = Console.ReadKey().Key;
+            Console.Clear();
+            if (input == ConsoleKey.Escape)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private void PrintCard(Card card) //, int numberOfCards)
+        {
+            // Get one character rank.
             string strCardRank;
             switch(card.Rank)
             {
@@ -96,6 +155,7 @@ namespace ProgramUINameSpace
                     break;
             }
 
+            // Set card color.
             Console.BackgroundColor = ConsoleColor.White;
             if (card.Color == Color.red)
             {
@@ -105,10 +165,12 @@ namespace ProgramUINameSpace
             {
                 Console.ForegroundColor = ConsoleColor.Black;
             }
+
+            // Write top line of card.
             Console.Write($"{(strCardRank.Length > 1 ? strCardRank : strCardRank + " ")}   \n");
-            //Console.BackgroundColor = ConsoleColor.Black;
-            //Console.Write("\n");
-            //Console.BackgroundColor = ConsoleColor.White;
+
+            // Write middle line of card.
+            Console.BackgroundColor = ConsoleColor.White;
             switch (card.Suit)
             {
                 case Suit.clubs:
@@ -127,8 +189,13 @@ namespace ProgramUINameSpace
                     Console.Write("     \n");
                     break;
             }
-            Console.Write($"   {(strCardRank.Length > 1 ? strCardRank : " " + strCardRank)}\n\n");
+
+            // Write bottom line of card.
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.Write($"   {(strCardRank.Length > 1 ? strCardRank : " " + strCardRank)}");
             Console.ResetColor();
+            //Console.Write($"x{numberOfCards}");
+            Console.Write("\n\n");
         }
     }
 }

@@ -109,5 +109,21 @@ namespace WarRepoNameSpace
                 return player2;
             }
         }
+
+        public Player GetWinner(Player player1, Player player2)
+        {
+            if (player1.Score == player2.Score)
+            {
+                return null;
+            }
+            else if (player1.Score > player2.Score)
+            {
+                return player1;
+            }
+            else
+            {
+                return player2;
+            }
+        }
     }
 }
