@@ -16,19 +16,52 @@ namespace ProgramUINameSpace
         private Player player2 = new Player("Computer");
         private List<Card> playedCards = new List<Card>();
 
+        int numberRounds = 0;
+
         public void Run()
         {
             bool continueGame = true;
+            PrintBlankCard();
             StartGame();
             while (continueGame)
             {
                 ResetGame();
-                while (player1.Deck.Cards.Count > 0)
+                while ((player1.Deck.Cards.Count != 0) && (player2.Deck.Cards.Count != 0))
                 {
+                    numberRounds++;
                     DisplayGameInfo();
                     DisplayHand(player1);
                     DisplayHand(player2);
-                    Player winner = _deckRepo.PlayHand(player1, player2, playedCards);
+                    Player winner = _deckRepo.PlayHand(player1, player2);
+                    //int cardsPlayed = 1;
+                    if ((player1.Deck.Cards.Count < 10) || (player2.Deck.Cards.Count < 10))
+                    {
+                        
+                        
+                        Console.WriteLine("HI");
+
+                    }
+                    while (winner == null)
+                    {                 
+                        DisplayGameInfo();
+                        DisplayHand(player1, false);
+                        DisplayHand(player2, false);
+                        for (int i = 0; i <= 10; i++)
+                        {
+                            _deckRepo.AddCardToPile(player1, player2);
+                            if((player1.Deck.Cards.Count == 1) || (player2.Deck.Cards.Count == 1))
+                            {
+                                break;
+                            }
+                        }
+                        Continue();
+                        DisplayGameInfo();
+                        DisplayHand(player1);
+                        DisplayHand(player2);
+                        winner = _deckRepo.PlayHand(player1, player2);
+
+                    }
+
                     DisplayRoundResult(winner);
                 }
                 DisplayMatchWinner();
@@ -64,30 +97,37 @@ namespace ProgramUINameSpace
 
         private void DisplayGameInfo()
         {
-            Console.WriteLine($"Current Score - {player1.Name}: {player1.Score}    {player2.Name}: {player2.Score}                         Rounds remaining: {player1.Deck.Cards.Count - 1}\n" +
+            
+            Console.WriteLine($"Current Score - {player1.Name}: {player1.Deck.Cards.Count}    {player2.Name}: {player2.Deck.Cards.Count} \n" +
+                              $"Current Round: {numberRounds} \n" +
                                "---------------------------------------------------------------------------------------\n");
         }
 
         private void DisplayHand(Player player)
         {
+            DisplayHand(player, true);
+        }
+        
+        private void DisplayHand(Player player, bool faceUp)
+        {
             Card card = player.Deck.Cards.Peek();
             Console.WriteLine($"{player.Name}'s card:");
-            PrintCard(card);
+            if (faceUp)
+            {
+                PrintCard(card);
+            }
+            else
+            {
+                PrintBlankCard();
+            }
         }
 
         private void DisplayRoundResult(Player winner)
         {
-            if (winner == null)
-            {
-                Console.WriteLine("Tie");
-            }
-            else
-            {
-                Console.WriteLine($"{winner.Name} won this hand.");
-            }
-            Console.WriteLine("\nPress any key to play the next hand.");
-            Console.ReadKey();
-            Console.Clear();
+            int winningPotCount = _deckRepo.WinningPotCount();
+            _deckRepo.AwardPot(winner);
+            Console.WriteLine($"{winner.Name} won {winningPotCount} cards");          
+            Continue();
         }
 
         private void DisplayMatchWinner()
@@ -197,6 +237,26 @@ namespace ProgramUINameSpace
             //Console.Write($"x{numberOfCards}");
             Console.Write("\n\n");
         }
+        private void PrintBlankCard()
+        {
+            Console.Clear();
+            Console.BackgroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.White;
+
+            Console.WriteLine("     ");
+            Console.WriteLine(" War ");
+            Console.WriteLine("     ");
+            Console.ResetColor();
+        }
+
+        private void Continue()
+        {
+            Console.WriteLine("\nPress any key to play the next card.");
+            Console.ReadKey();
+            Console.Clear();
+        }
     }
+
+    
 }
 

@@ -11,6 +11,7 @@ namespace WarRepoNameSpace
     public class WarRepo
     {
         private Queue<Card> _cards = new Queue<Card>();
+        private Queue<Card> _winningPot = new Queue<Card>();
 
         // Create
         public Queue<Card> MakeDeck()
@@ -54,6 +55,8 @@ namespace WarRepoNameSpace
 
         // Read
         public Queue<Card> GetDeck() => _cards;
+        public int WinningPotCount() => _winningPot.Count();
+
 
         // Add/Update
         public void AddCards(Queue<Card> deck)
@@ -84,12 +87,20 @@ namespace WarRepoNameSpace
             }
         }
 
-        public Player PlayHand(Player player1, Player player2, List<Card> playedCards)
+        public void AwardPot(Player player)
+        {
+            for (int i = _winningPot.Count - 1; i >= 0; i--)
+            {
+                player.Deck.Cards.Enqueue(_winningPot.Dequeue());
+            }
+        }
+
+        public Player PlayHand(Player player1, Player player2)
         {
             Card p1Card = player1.Deck.Cards.Dequeue();
             Card p2Card = player2.Deck.Cards.Dequeue();
-            playedCards.Add(p1Card);
-            playedCards.Add(p2Card);
+            _winningPot.Enqueue(p1Card);
+            _winningPot.Enqueue(p2Card);
 
             if (p1Card.Rank == p2Card.Rank)
             {
@@ -125,5 +136,17 @@ namespace WarRepoNameSpace
                 return player2;
             }
         }
+
+        
+        public void  AddCardToPile(Player player1, Player player2)
+        {
+            _winningPot.Enqueue(player1.Deck.Cards.Dequeue());
+            _winningPot.Enqueue(player2.Deck.Cards.Dequeue());
+            
+        }
+
+
+
+       
     }
 }
