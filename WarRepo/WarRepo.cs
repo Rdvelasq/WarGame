@@ -110,24 +110,18 @@ namespace WarRepoNameSpace
             else if (p1Card.Rank > p2Card.Rank)
             {
                 // Player 1 wins
-                player1.Score++;
                 return player1;
             }
             else
             {
                 // Player 2 wins
-                player2.Score++;
                 return player2;
             }
         }
 
         public Player GetWinner(Player player1, Player player2)
         {
-            if (player1.Score == player2.Score)
-            {
-                return null;
-            }
-            else if (player1.Score > player2.Score)
+            if (player1.Deck.Cards.Count > player2.Deck.Cards.Count)
             {
                 return player1;
             }
@@ -144,9 +138,6 @@ namespace WarRepoNameSpace
             _winningPot.Enqueue(player2.Deck.Cards.Dequeue());
             
         }
-
-
-
-       
+    
     }
 }

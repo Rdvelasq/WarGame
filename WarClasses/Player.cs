@@ -9,9 +9,7 @@ namespace WarClasses
     public class Player
     {
         public Deck Deck = new Deck();
-        public List<Card> CardsWon = new List<Card>();
         public string Name { get; set; }
-        public int Score { get; set; }
 
         public Player()
         {

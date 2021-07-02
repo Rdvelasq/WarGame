@@ -12,59 +12,57 @@ namespace ProgramUINameSpace
     public class ProgramUI
     {
         private readonly WarRepo _deckRepo = new WarRepo();
+        int cardsLaidWhenTied = 10;
         private Player player1 = new Player();
         private Player player2 = new Player("Computer");
-        private List<Card> playedCards = new List<Card>();
-
         int numberRounds = 0;
 
         public void Run()
         {
             bool continueGame = true;
-            PrintBlankCard();
+            Player winner = default;
+            PrintBlankCard(1);
             StartGame();
             while (continueGame)
             {
-                ResetGame();
+                ResetGame(winner);
                 while ((player1.Deck.Cards.Count != 0) && (player2.Deck.Cards.Count != 0))
                 {
                     numberRounds++;
                     DisplayGameInfo();
                     DisplayHand(player1);
                     DisplayHand(player2);
-                    Player winner = _deckRepo.PlayHand(player1, player2);
-                    //int cardsPlayed = 1;
-                    if ((player1.Deck.Cards.Count < 10) || (player2.Deck.Cards.Count < 10))
-                    {
-                        
-                        
-                        Console.WriteLine("HI");
-
-                    }
+                    winner = _deckRepo.PlayHand(player1, player2);
                     while (winner == null)
-                    {                 
+                    {
+                        if ((player1.Deck.Cards.Count == 0) || (player2.Deck.Cards.Count == 0))
+                        {
+                            _deckRepo.GetWinner(player1, player2);
+                            break;
+                        }
+                        DisplayRoundResult(winner);
                         DisplayGameInfo();
-                        DisplayHand(player1, false);
-                        DisplayHand(player2, false);
-                        for (int i = 0; i <= 10; i++)
+                        for (int i = 0; i < cardsLaidWhenTied; i++)
                         {
                             _deckRepo.AddCardToPile(player1, player2);
-                            if((player1.Deck.Cards.Count == 1) || (player2.Deck.Cards.Count == 1))
+                            if ((player1.Deck.Cards.Count == 1) || (player2.Deck.Cards.Count == 1))
                             {
                                 break;
                             }
                         }
+                        DisplayHand(player1, false);
+                        DisplayHand(player2, false);
+                        DisplayNumCardsInEachPile();
                         Continue();
                         DisplayGameInfo();
                         DisplayHand(player1);
                         DisplayHand(player2);
                         winner = _deckRepo.PlayHand(player1, player2);
-
                     }
-
                     DisplayRoundResult(winner);
                 }
-                DisplayMatchWinner();
+                winner = _deckRepo.GetWinner(player1, player2);
+                DisplayMatchWinner(winner);
                 continueGame = DisplayContinue();
             }
         }
@@ -83,24 +81,29 @@ namespace ProgramUINameSpace
             player1.Name = playerName;
         }
 
-        private void ResetGame()
+        private void ResetGame(Player winner)
         {
-            if (playedCards.Count > 0)
+            if (winner != default)
             {
-                _deckRepo.AddCards(_deckRepo.ShuffleDeck(playedCards));
+                List<Card> unshuffledDeck = new List<Card>();
+                for (int i = winner.Deck.Cards.Count - 1; i >= 0; i--)
+                {
+                    unshuffledDeck.Add(winner.Deck.Cards.Dequeue());
+                }
+                _deckRepo.AddCards(_deckRepo.ShuffleDeck(unshuffledDeck));
             }
-            playedCards = new List<Card>();
-            player1.Score = 0;
-            player2.Score = 0;
             _deckRepo.DealCards(player1, player2);
+            numberRounds = 0;
         }
 
         private void DisplayGameInfo()
         {
-            
-            Console.WriteLine($"Current Score - {player1.Name}: {player1.Deck.Cards.Count}    {player2.Name}: {player2.Deck.Cards.Count} \n" +
-                              $"Current Round: {numberRounds} \n" +
-                               "---------------------------------------------------------------------------------------\n");
+            Console.Clear();
+            string info = $"Cards Remaining - {player1.Name}: {player1.Deck.Cards.Count - 1}    {player2.Name}: {player2.Deck.Cards.Count - 1}";
+            string rounds = $"Current Round: {numberRounds}";
+            string separator = "---------------------------------------------------------------------------------------";
+            Console.WriteLine(info + rounds.PadLeft(separator.Length - info.Length) + "\n" +
+                              separator + "\n");
         }
 
         private void DisplayHand(Player player)
@@ -114,32 +117,36 @@ namespace ProgramUINameSpace
             Console.WriteLine($"{player.Name}'s card:");
             if (faceUp)
             {
-                PrintCard(card);
+                PrintCard(card, _deckRepo.WinningPotCount() / 2 + 1);
             }
             else
             {
-                PrintBlankCard();
+                PrintBlankCard(_deckRepo.WinningPotCount() / 2);
             }
         }
 
         private void DisplayRoundResult(Player winner)
         {
-            int winningPotCount = _deckRepo.WinningPotCount();
-            _deckRepo.AwardPot(winner);
-            Console.WriteLine($"{winner.Name} won {winningPotCount} cards");          
+            if (winner == null)
+            {
+                int maxCards = cardsLaidWhenTied;
+                maxCards = Math.Min(maxCards, player1.Deck.Cards.Count - 1);
+                maxCards = Math.Min(maxCards, player2.Deck.Cards.Count - 1);
+                Console.WriteLine($"We have a tie!  Each player will now play {maxCards} cards face down.");
+            }
+            else
+            {
+                int winningPotCount = _deckRepo.WinningPotCount();
+                _deckRepo.AwardPot(winner);
+                Console.WriteLine($"{winner.Name} won {winningPotCount} cards.");
+            }
             Continue();
         }
 
-        private void DisplayMatchWinner()
+        private void DisplayMatchWinner(Player winner)
         {
-            Player winner = _deckRepo.GetWinner(player1, player2);
-            Console.WriteLine($"----------------------------------------------------------------------------------------\n" +
-                              $"The final score is {player1.Name} {player1.Score}, {player2.Name} {player2.Score}.\n");
-            if (winner == null)
-            {
-                Console.WriteLine("The game resulted in a tie.");
-            }
-            else if (winner == player1)
+            Console.WriteLine($"----------------------------------------------------------------------------------------\n");
+            if (winner == player1)
             {
                 Console.WriteLine("You win!");
             }
@@ -147,7 +154,12 @@ namespace ProgramUINameSpace
             {
                 Console.WriteLine("You lose!");
             }
-            Console.WriteLine($"----------------------------------------------------------------------------------------");
+            Console.WriteLine($"\n----------------------------------------------------------------------------------------");
+        }
+
+        private void DisplayNumCardsInEachPile()
+        {
+            Console.WriteLine($"Each player adds {(_deckRepo.WinningPotCount() / 2) - 1} cards to their pile.");
         }
 
         private bool DisplayContinue()
@@ -165,7 +177,7 @@ namespace ProgramUINameSpace
             }
         }
 
-        private void PrintCard(Card card) //, int numberOfCards)
+        private void PrintCard(Card card, int numberOfCards)
         {
             // Get one character rank.
             string strCardRank;
@@ -234,19 +246,26 @@ namespace ProgramUINameSpace
             Console.BackgroundColor = ConsoleColor.White;
             Console.Write($"   {(strCardRank.Length > 1 ? strCardRank : " " + strCardRank)}");
             Console.ResetColor();
-            //Console.Write($"x{numberOfCards}");
+            if (numberOfCards > 1)
+            {
+                Console.Write($" x{numberOfCards}");
+            }
             Console.Write("\n\n");
         }
-        private void PrintBlankCard()
+        private void PrintBlankCard(int numberOfCards)
         {
-            Console.Clear();
             Console.BackgroundColor = ConsoleColor.Red;
             Console.ForegroundColor = ConsoleColor.White;
 
             Console.WriteLine("     ");
             Console.WriteLine(" War ");
-            Console.WriteLine("     ");
+            Console.Write("     ");
             Console.ResetColor();
+            if (numberOfCards > 1)
+            {
+                Console.Write($" x{numberOfCards}");
+            }
+            Console.Write("\n\n");
         }
 
         private void Continue()
