@@ -12,6 +12,8 @@ namespace ProgramUINameSpace
     public class ProgramUI
     {
         private readonly WarRepo _deckRepo = new WarRepo();
+        // The higher you set this, the quicker games will go.
+        // Set to 52 if you want a high probability for any tie to end the game.
         int cardsLaidWhenTied = 10;
         private Player player1 = new Player();
         private Player player2 = new Player("Computer");
@@ -21,7 +23,6 @@ namespace ProgramUINameSpace
         {
             bool continueGame = true;
             Player winner = default;
-            PrintBlankCard(1);
             StartGame();
             while (continueGame)
             {
@@ -50,11 +51,13 @@ namespace ProgramUINameSpace
                                 break;
                             }
                         }
+                        // Display cards played face down
                         DisplayHand(player1, false);
                         DisplayHand(player2, false);
                         DisplayNumCardsInEachPile();
                         Continue();
                         DisplayGameInfo();
+                        //Display cards used to determine winner
                         DisplayHand(player1);
                         DisplayHand(player2);
                         winner = _deckRepo.PlayHand(player1, player2);
@@ -73,6 +76,7 @@ namespace ProgramUINameSpace
             _deckRepo.MakeDeck();
             while (playerName == "")
             {
+                PrintBlankCard(1);
                 Console.WriteLine("Welcome to WAR!\n\n" +
                                   "What is your name?");
                 playerName = Console.ReadLine();
@@ -246,6 +250,8 @@ namespace ProgramUINameSpace
             Console.BackgroundColor = ConsoleColor.White;
             Console.Write($"   {(strCardRank.Length > 1 ? strCardRank : " " + strCardRank)}");
             Console.ResetColor();
+
+            // Display card count when multiple cards are in pile
             if (numberOfCards > 1)
             {
                 Console.Write($" x{numberOfCards}");
@@ -254,6 +260,7 @@ namespace ProgramUINameSpace
         }
         private void PrintBlankCard(int numberOfCards)
         {
+            // Prints face-down cards
             Console.BackgroundColor = ConsoleColor.Red;
             Console.ForegroundColor = ConsoleColor.White;
 

@@ -134,9 +134,14 @@ namespace WarRepoNameSpace
         
         public void  AddCardToPile(Player player1, Player player2)
         {
-            _winningPot.Enqueue(player1.Deck.Cards.Dequeue());
-            _winningPot.Enqueue(player2.Deck.Cards.Dequeue());
-            
+            if (player1.Deck.Cards.Count > 0)
+            {
+                _winningPot.Enqueue(player1.Deck.Cards.Dequeue());
+            }
+            if (player2.Deck.Cards.Count > 0)
+            {
+                _winningPot.Enqueue(player2.Deck.Cards.Dequeue());
+            }
         }
     
     }
